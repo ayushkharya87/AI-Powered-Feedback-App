@@ -14,5 +14,27 @@ A full-stack AI-based application using **MERN** and **Vite** that allows users 
 
 ---
 
-## 📁 Folder Structure
+## 🛠️ Setup Instructions
 
+```bash
+# 1. Clone the Repository
+git clone https://github.com/ayushkharya87/AI-Powered-Feedback-App.git
+cd AI-Powered-Feedback-App
+
+# 2. Setup Backend
+cd server
+npm install
+
+# Create a .env file in /server with the following:
+# ----------------------------------
+# PORT=
+# MONGO_URI=
+# GEMINI_API_KEY=your_gemini_api_key_here
+# ----------------------------------
+
+npm run dev
+
+# 3. Setup Frontend
+cd ../client
+npm install
+npm run dev
