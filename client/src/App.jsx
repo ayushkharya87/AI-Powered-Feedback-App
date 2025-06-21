@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [userInput, setUserInput] = useState('');
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,7 +14,7 @@ function App() {
 
   const fetchFeedbacks = async () => {
     try {
-      const res = await fetch('/api/feedback');
+      const res = await fetch(`${BASE_URL}/api/feedback`);
       const data = await res.json();
       setAllFeedbacks(data);
     } catch (err) {
@@ -27,7 +28,7 @@ function App() {
     setFeedback('');
 
     try {
-      const res = await fetch('/api/feedback', {
+      const res = await fetch(`${BASE_URL}/api/feedback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_input: userInput }),
