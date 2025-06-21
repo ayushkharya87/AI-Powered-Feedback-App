@@ -7,6 +7,7 @@ function App() {
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(false);
   const [allFeedbacks, setAllFeedbacks] = useState([]);
+  const [fetchError, setFetchError] = useState(null); 
 
   useEffect(() => {
     fetchFeedbacks();
@@ -16,9 +17,18 @@ function App() {
     try {
       const res = await fetch(`${BASE_URL}/api/feedback`);
       const data = await res.json();
-      setAllFeedbacks(data);
+
+      if (Array.isArray(data)) {
+        setAllFeedbacks(data);
+        setFetchError(null);
+      } else {
+        console.error('Unexpected response (not array):', data);
+        setFetchError('Server returned invalid data.');
+        setAllFeedbacks([]);
+      }
     } catch (err) {
       console.error('Failed to load feedbacks:', err);
+      setFetchError('Could not load feedbacks.');
     }
   };
 
@@ -35,11 +45,17 @@ function App() {
       });
 
       const data = await res.json();
-      setFeedback(data.feedback);
-      setUserInput(''); 
-      fetchFeedbacks(); 
+
+      if (res.ok) {
+        setFeedback(data.feedback || 'No feedback returned');
+        setUserInput('');
+        fetchFeedbacks(); // Reload feedback list
+      } else {
+        console.error('Server error:', data);
+        setFeedback(data?.error || 'Server error. Try again.');
+      }
     } catch (error) {
-      console.error(error);
+      console.error('Submit error:', error);
       setFeedback('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -49,6 +65,7 @@ function App() {
   return (
     <div className="container-fluid min-vh-100" style={{ backgroundColor: '#121212', color: '#f1f1f1' }}>
       <div className="row h-100">
+        {/* ---------- Form Section ---------- */}
         <div className="col-md-6 d-flex align-items-center justify-content-center p-5">
           <div style={{ width: '100%', maxWidth: '600px' }}>
             <h2 className="mb-4 text-center">🧠 AI-Powered Feedback App</h2>
@@ -86,16 +103,19 @@ function App() {
           </div>
         </div>
 
-        {/* ----------- Feedback Cards Section ---------- */}
+        {/* ---------- Feedback Cards Section ---------- */}
         <div className="col-md-6 p-5 overflow-auto" style={{ maxHeight: '100vh' }}>
           <div className="d-flex justify-content-between align-items-center mb-3">
             <h4 className="text-light m-0">📜 Previous Responses</h4>
-            <span className=" px-3 py-2">
+            <span className="px-3 py-2">
               Total Responses: {allFeedbacks.length}
             </span>
           </div>
           <hr />
-          {allFeedbacks.length === 0 ? (
+
+          {fetchError ? (
+            <p className="mt-5 text-center border p-3 text-danger">{fetchError}</p>
+          ) : allFeedbacks.length === 0 ? (
             <p className="mt-5 text-center border p-3">No feedback yet. Submit your first response!</p>
           ) : (
             allFeedbacks.map((item, index) => {
@@ -113,28 +133,17 @@ function App() {
                   }}
                 >
                   <div className="card-body p-4">
-                    {/* Date & Time */}
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <small className="">
-                        📅 {formattedDate} &nbsp;&nbsp; 🕒 {formattedTime}
-                      </small>
+                      <small>📅 {formattedDate} &nbsp;&nbsp; 🕒 {formattedTime}</small>
                     </div>
-
-                    {/* User Input */}
                     <div className="mb-4">
-                      <h6 className="text-warning fw-bold mb-2">
-                        🗣️ User Input
-                      </h6>
+                      <h6 className="text-warning fw-bold mb-2">🗣️ User Input</h6>
                       <div className="p-3 rounded bg-dark border-start border-3 border-warning">
                         <p className="mb-0 text-light">{item.user_input}</p>
                       </div>
                     </div>
-
-                    {/* AI Feedback */}
                     <div>
-                      <h6 className="text-success fw-bold mb-2">
-                        🤖 AI Feedback
-                      </h6>
+                      <h6 className="text-success fw-bold mb-2">🤖 AI Feedback</h6>
                       <div className="p-3 rounded bg-dark border-start border-3 border-success">
                         <p className="mb-0 text-light">{item.feedback}</p>
                       </div>
